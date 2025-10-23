@@ -99,12 +99,12 @@ const handleSubmit = async (e: Event) => {
     if (!reader) throw new Error('No reader available')
 
     const decoder = new TextDecoder()
-    let assistantMessage: Message = {
+    const assistantMessageIndex = messages.value.length
+    messages.value.push({
       role: 'assistant',
       content: '',
       toolInvocations: [],
-    }
-    messages.value.push(assistantMessage)
+    })
 
     let buffer = ''
 
@@ -125,20 +125,20 @@ const handleSubmit = async (e: Event) => {
 
           if (data.type === 'text-delta') {
             const textContent = data.textDelta || data.text || ''
-            assistantMessage.content += textContent
+            messages.value[assistantMessageIndex].content += textContent
           } else if (data.type === 'tool-call') {
-            if (!assistantMessage.toolInvocations) {
-              assistantMessage.toolInvocations = []
+            if (!messages.value[assistantMessageIndex].toolInvocations) {
+              messages.value[assistantMessageIndex].toolInvocations = []
             }
-            assistantMessage.toolInvocations.push({
+            messages.value[assistantMessageIndex].toolInvocations!.push({
               toolName: data.toolName,
               state: 'call',
               args: data.args,
               expanded: false,
             })
           } else if (data.type === 'tool-result') {
-            if (assistantMessage.toolInvocations) {
-              const tool = assistantMessage.toolInvocations.find(
+            if (messages.value[assistantMessageIndex].toolInvocations) {
+              const tool = messages.value[assistantMessageIndex].toolInvocations!.find(
                 t => t.toolName === data.toolName
               )
               if (tool) {
