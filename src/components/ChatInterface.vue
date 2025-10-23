@@ -43,7 +43,9 @@ const scrollToBottom = async () => {
 const formatMessage = (content: string) => {
   if (!content) return ''
   try {
-    return marked.parse(content) as string
+    // Use marked synchronously
+    const result = marked.parse(content, { async: false })
+    return result as string
   } catch (error) {
     console.error('Error parsing markdown:', error)
     return content
