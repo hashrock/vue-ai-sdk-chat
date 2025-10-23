@@ -1,17 +1,9 @@
 <script setup lang="ts">
 import { ref, nextTick } from 'vue'
 import { marked } from 'marked'
-import 'highlight.js/styles/github-dark.css'
-import hljs from 'highlight.js'
 
-// Configure marked with highlight.js
+// Configure marked
 marked.setOptions({
-  highlight: (code, lang) => {
-    if (lang && hljs.getLanguage(lang)) {
-      return hljs.highlight(code, { language: lang }).value
-    }
-    return hljs.highlightAuto(code).value
-  },
   breaks: true,
 })
 
