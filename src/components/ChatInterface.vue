@@ -137,7 +137,7 @@ const handleSubmit = async (e: Event) => {
               )
               if (tool) {
                 tool.state = 'result'
-                tool.result = data.result
+                tool.result = data.output  // Changed from data.result to data.output
               }
             }
           }

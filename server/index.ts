@@ -1,8 +1,10 @@
 import { serve } from '@hono/node-server'
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
-import { streamText, type CoreMessage, jsonSchema } from 'ai'
+import { streamText, type CoreMessage } from 'ai'
 import { anthropic } from '@ai-sdk/anthropic'
+import { openai } from '@ai-sdk/openai'
+import { z } from 'zod'
 import fs from 'fs/promises'
 import path from 'path'
 import 'dotenv/config'
@@ -17,16 +19,25 @@ app.use('/*', cors({
 
 // 環境変数チェック
 const LOCAL_PATH = process.env.LOCAL_PATH
+const PROVIDER = process.env.PROVIDER || 'anthropic'
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY
-const MODEL = process.env.MODEL || 'claude-3-5-sonnet-20241022'
+const OPENAI_API_KEY = process.env.OPENAI_API_KEY
+const MODEL = process.env.MODEL || (PROVIDER === 'openai' ? 'gpt-4o' : 'claude-3-5-sonnet-20241022')
 
 if (!LOCAL_PATH) {
   throw new Error('LOCAL_PATH environment variable is required')
 }
 
-if (!ANTHROPIC_API_KEY) {
+if (PROVIDER === 'anthropic' && !ANTHROPIC_API_KEY) {
   throw new Error('ANTHROPIC_API_KEY environment variable is required')
 }
+
+if (PROVIDER === 'openai' && !OPENAI_API_KEY) {
+  throw new Error('OPENAI_API_KEY environment variable is required')
+}
+
+// Select AI model based on provider
+const aiModel = PROVIDER === 'openai' ? openai(MODEL) : anthropic(MODEL)
 
 // パスの検証とセキュリティチェック
 function validatePath(filePath: string): string {
@@ -104,97 +115,49 @@ const toolExecutors = {
   },
 }
 
-// Tools definition using jsonSchema with explicit type field
+// Tools definition using inputSchema (correct property name)
 const tools = {
   read_file: {
     description: 'Read the contents of a file at the specified path',
-    parameters: jsonSchema({
-      type: 'object',
-      properties: {
-        path: {
-          type: 'string',
-          description: 'Relative path to the file within LOCAL_PATH',
-        },
-      },
-      required: ['path'],
+    inputSchema: z.object({
+      path: z.string().describe('Relative path to the file within LOCAL_PATH'),
     }),
     execute: toolExecutors.read_file,
   },
   write_file: {
     description: 'Write content to a file at the specified path. Creates the file if it does not exist.',
-    parameters: jsonSchema({
-      type: 'object',
-      properties: {
-        path: {
-          type: 'string',
-          description: 'Relative path to the file within LOCAL_PATH',
-        },
-        content: {
-          type: 'string',
-          description: 'Content to write to the file',
-        },
-      },
-      required: ['path', 'content'],
+    inputSchema: z.object({
+      path: z.string().describe('Relative path to the file within LOCAL_PATH'),
+      content: z.string().describe('Content to write to the file'),
     }),
     execute: toolExecutors.write_file,
   },
   list_files: {
     description: 'List all files and directories in the specified directory',
-    parameters: jsonSchema({
-      type: 'object',
-      properties: {
-        path: {
-          type: 'string',
-          description: 'Relative path to the directory within LOCAL_PATH. Defaults to root.',
-        },
-      },
-      required: [],
+    inputSchema: z.object({
+      path: z.string().optional().describe('Relative path to the directory within LOCAL_PATH. Defaults to root.'),
     }),
     execute: toolExecutors.list_files,
   },
   delete_file: {
     description: 'Delete a file at the specified path',
-    parameters: jsonSchema({
-      type: 'object',
-      properties: {
-        path: {
-          type: 'string',
-          description: 'Relative path to the file within LOCAL_PATH',
-        },
-      },
-      required: ['path'],
+    inputSchema: z.object({
+      path: z.string().describe('Relative path to the file within LOCAL_PATH'),
     }),
     execute: toolExecutors.delete_file,
   },
   rename_file: {
     description: 'Rename or move a file from one path to another',
-    parameters: jsonSchema({
-      type: 'object',
-      properties: {
-        from: {
-          type: 'string',
-          description: 'Current relative path to the file within LOCAL_PATH',
-        },
-        to: {
-          type: 'string',
-          description: 'New relative path to the file within LOCAL_PATH',
-        },
-      },
-      required: ['from', 'to'],
+    inputSchema: z.object({
+      from: z.string().describe('Current relative path to the file within LOCAL_PATH'),
+      to: z.string().describe('New relative path to the file within LOCAL_PATH'),
     }),
     execute: toolExecutors.rename_file,
   },
   create_directory: {
     description: 'Create a new directory at the specified path',
-    parameters: jsonSchema({
-      type: 'object',
-      properties: {
-        path: {
-          type: 'string',
-          description: 'Relative path to the directory within LOCAL_PATH',
-        },
-      },
-      required: ['path'],
+    inputSchema: z.object({
+      path: z.string().describe('Relative path to the directory within LOCAL_PATH'),
     }),
     execute: toolExecutors.create_directory,
   },
@@ -205,12 +168,15 @@ app.post('/api/chat', async (c) => {
   try {
     const { messages } = await c.req.json()
 
+    // ツールスキーマをログ出力
+    console.log('=== Tools Schema Debug ===')
+    console.log(JSON.stringify(tools, null, 2))
+
     const result = streamText({
-      model: anthropic(MODEL),
+      model: aiModel,
       system: 'You are a helpful assistant. After using any tool, always explain what you did and show the results to the user in a clear and friendly way.',
       messages: messages as CoreMessage[],
       tools,
-      maxSteps: 10,
       async onStepFinish({ toolCalls }) {
         // ツール呼び出しがあった場合の処理
         for (const toolCall of toolCalls) {
@@ -263,6 +229,7 @@ app.get('/health', (c) => {
 const port = parseInt(process.env.PORT || '3000')
 console.log(`🚀 Server is running on http://localhost:${port}`)
 console.log(`📁 LOCAL_PATH: ${LOCAL_PATH}`)
+console.log(`🤖 AI Provider: ${PROVIDER} (${MODEL})`)
 
 serve({
   fetch: app.fetch,
