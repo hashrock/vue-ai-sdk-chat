@@ -230,97 +230,73 @@ const handleSubmit = async (e: Event) => {
   display: flex;
   flex-direction: column;
   height: 100vh;
-  max-width: 900px;
+  max-width: 1200px;
   margin: 0 auto;
-  background: #ffffff;
+  background: #fff;
 }
 
 .chat-header {
-  padding: 1.5rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  padding: 1rem;
+  border-bottom: 1px solid #e0e0e0;
 }
 
 .chat-header h1 {
   margin: 0;
-  font-size: 1.5rem;
-  font-weight: 600;
+  font-size: 1.25rem;
+  font-weight: 500;
+  color: #333;
 }
 
 .messages-container {
   flex: 1;
   overflow-y: auto;
-  padding: 1.5rem;
-  background: #f7f9fc;
+  padding: 1rem;
 }
 
 .message {
-  margin-bottom: 1.5rem;
-  animation: fadeIn 0.3s ease-in;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  margin-bottom: 1rem;
 }
 
 .message-header {
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.25rem;
 }
 
 .role-badge {
-  display: inline-block;
-  padding: 0.25rem 0.75rem;
-  border-radius: 12px;
   font-size: 0.75rem;
-  font-weight: 600;
+  font-weight: 500;
+  color: #666;
   text-transform: uppercase;
 }
 
-.message.user .role-badge {
-  background: #e3f2fd;
-  color: #1976d2;
-}
-
-.message.assistant .role-badge {
-  background: #f3e5f5;
-  color: #7b1fa2;
-}
-
 .message-content {
-  padding: 1rem;
-  border-radius: 12px;
-  line-height: 1.6;
+  padding: 0.75rem;
+  border-radius: 4px;
+  line-height: 1.5;
+  text-align: left;
 }
 
 .message.user .message-content {
-  background: #e3f2fd;
-  color: #1a1a1a;
+  background: #f5f5f5;
+  color: #333;
 }
 
 .message.assistant .message-content {
-  background: white;
-  color: #1a1a1a;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  background: #fafafa;
+  color: #333;
+  border: 1px solid #e0e0e0;
 }
 
 .markdown-content :deep(pre) {
-  background: #1e1e1e;
-  padding: 1rem;
-  border-radius: 8px;
+  background: #f5f5f5;
+  padding: 0.75rem;
+  border-radius: 4px;
   overflow-x: auto;
   margin: 0.5rem 0;
+  border: 1px solid #e0e0e0;
 }
 
 .markdown-content :deep(code) {
-  font-family: 'Courier New', monospace;
+  font-family: monospace;
   font-size: 0.9em;
 }
 
@@ -338,41 +314,39 @@ const handleSubmit = async (e: Event) => {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
-  margin-top: 0.75rem;
+  margin-top: 0.5rem;
 }
 
 .tool-pill {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.5rem 1rem;
-  background: #f0f4ff;
-  border: 1px solid #d0d7ff;
-  border-radius: 20px;
+  padding: 0.25rem 0.75rem;
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
   font-size: 0.85rem;
-  font-weight: 500;
-  color: #4c51bf;
+  color: #666;
 }
 
 .tool-icon {
-  font-size: 1rem;
+  font-size: 0.9rem;
 }
 
 .tool-status {
   font-size: 0.75rem;
-  margin-left: 0.25rem;
 }
 
 .tool-status.success {
-  color: #10b981;
+  color: #4caf50;
 }
 
 .tool-status.pending {
-  color: #f59e0b;
+  color: #ff9800;
 }
 
 .tool-status.error {
-  color: #ef4444;
+  color: #f44336;
 }
 
 .typing-indicator {
@@ -382,10 +356,10 @@ const handleSubmit = async (e: Event) => {
 }
 
 .typing-indicator span {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
-  background: #9ca3af;
+  background: #999;
   animation: typing 1.4s infinite;
 }
 
@@ -400,61 +374,53 @@ const handleSubmit = async (e: Event) => {
 @keyframes typing {
   0%, 60%, 100% {
     opacity: 0.3;
-    transform: translateY(0);
   }
   30% {
     opacity: 1;
-    transform: translateY(-10px);
   }
 }
 
 .input-form {
   display: flex;
-  gap: 0.75rem;
-  padding: 1.5rem;
-  background: white;
-  border-top: 1px solid #e5e7eb;
+  gap: 0.5rem;
+  padding: 1rem;
+  border-top: 1px solid #e0e0e0;
 }
 
 .message-input {
   flex: 1;
-  padding: 0.75rem 1rem;
-  border: 2px solid #e5e7eb;
-  border-radius: 8px;
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
   font-size: 1rem;
   outline: none;
-  transition: border-color 0.2s;
 }
 
 .message-input:focus {
-  border-color: #667eea;
+  border-color: #999;
 }
 
 .message-input:disabled {
-  background: #f3f4f6;
+  background: #f5f5f5;
   cursor: not-allowed;
 }
 
 .send-button {
-  padding: 0.75rem 2rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 0.5rem 1rem;
+  background: #333;
   color: white;
   border: none;
-  border-radius: 8px;
+  border-radius: 4px;
   font-size: 1rem;
-  font-weight: 600;
   cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
 }
 
 .send-button:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+  background: #555;
 }
 
 .send-button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
-  transform: none;
 }
 </style>
