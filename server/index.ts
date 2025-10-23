@@ -1,7 +1,7 @@
 import { serve } from '@hono/node-server'
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
-import { streamText, type CoreMessage } from 'ai'
+import { streamText, type CoreMessage, stepCountIs } from 'ai'
 import { anthropic } from '@ai-sdk/anthropic'
 import { openai } from '@ai-sdk/openai'
 import { z } from 'zod'
@@ -39,16 +39,10 @@ if (PROVIDER === 'openai' && !OPENAI_API_KEY) {
 // Select AI model based on provider
 const aiModel = PROVIDER === 'openai' ? openai(MODEL) : anthropic(MODEL)
 
-// パスの検証とセキュリティチェック
+// パスの検証（無効化: セキュリティチェックなし）
 function validatePath(filePath: string): string {
-  const resolvedPath = path.resolve(LOCAL_PATH, filePath)
-  const normalizedLocalPath = path.resolve(LOCAL_PATH)
-
-  if (!resolvedPath.startsWith(normalizedLocalPath)) {
-    throw new Error('Access denied: Path is outside of LOCAL_PATH')
-  }
-
-  return resolvedPath
+  // LOCAL_PATHとの相対パス解決のみ行う
+  return path.resolve(LOCAL_PATH!, filePath)
 }
 
 // ツール実行関数
@@ -177,6 +171,7 @@ app.post('/api/chat', async (c) => {
       system: 'You are a helpful assistant. After using any tool, always explain what you did and show the results to the user in a clear and friendly way.',
       messages: messages as CoreMessage[],
       tools,
+      stopWhen: stepCountIs(10), // Allow multiple tool calls and follow-up responses
       async onStepFinish({ toolCalls }) {
         // ツール呼び出しがあった場合の処理
         for (const toolCall of toolCalls) {
