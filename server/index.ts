@@ -45,7 +45,7 @@ function validatePath(filePath: string): string {
 const tools = {
   read_file: tool({
     description: 'Read the contents of a file at the specified path',
-    parameters: z.object({
+    inputSchema: z.object({
       path: z.string().describe('Relative path to the file within LOCAL_PATH'),
     }),
     execute: async ({ path: filePath }) => {
@@ -60,7 +60,7 @@ const tools = {
   }),
   write_file: tool({
     description: 'Write content to a file at the specified path. Creates the file if it does not exist.',
-    parameters: z.object({
+    inputSchema: z.object({
       path: z.string().describe('Relative path to the file within LOCAL_PATH'),
       content: z.string().describe('Content to write to the file'),
     }),
@@ -77,7 +77,7 @@ const tools = {
   }),
   list_files: tool({
     description: 'List all files and directories in the specified directory',
-    parameters: z.object({
+    inputSchema: z.object({
       path: z.string().optional().describe('Relative path to the directory within LOCAL_PATH. Defaults to root.'),
     }),
     execute: async ({ path: dirPath = '.' }) => {
@@ -96,7 +96,7 @@ const tools = {
   }),
   delete_file: tool({
     description: 'Delete a file at the specified path',
-    parameters: z.object({
+    inputSchema: z.object({
       path: z.string().describe('Relative path to the file within LOCAL_PATH'),
     }),
     execute: async ({ path: filePath }) => {
@@ -111,7 +111,7 @@ const tools = {
   }),
   rename_file: tool({
     description: 'Rename or move a file from one path to another',
-    parameters: z.object({
+    inputSchema: z.object({
       from: z.string().describe('Current relative path to the file within LOCAL_PATH'),
       to: z.string().describe('New relative path to the file within LOCAL_PATH'),
     }),
@@ -128,7 +128,7 @@ const tools = {
   }),
   create_directory: tool({
     description: 'Create a new directory at the specified path',
-    parameters: z.object({
+    inputSchema: z.object({
       path: z.string().describe('Relative path to the directory within LOCAL_PATH'),
     }),
     execute: async ({ path: dirPath }) => {
