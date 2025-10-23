@@ -6,15 +6,27 @@
   "scripts": {
     "dev": "vite",
     "build": "vue-tsc -b && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "server": "tsx server/index.ts"
   },
   "dependencies": {
-    "vue": "^3.5.22"
+    "@ai-sdk/anthropic": "^2.0.37",
+    "@ai-sdk/openai": "^2.0.53",
+    "@hono/node-server": "^1.19.5",
+    "ai": "^5.0.76",
+    "dotenv": "^17.2.3",
+    "highlight.js": "^11.11.1",
+    "hono": "^4.10.2",
+    "marked": "^16.4.1",
+    "vue": "^3.5.22",
+    "zod": "^3.25.76"
   },
   "devDependencies": {
+    "@types/marked": "^5.0.2",
     "@types/node": "^24.6.0",
     "@vitejs/plugin-vue": "^6.0.1",
     "@vue/tsconfig": "^0.8.1",
+    "tsx": "^4.20.6",
     "typescript": "~5.9.3",
     "vite": "^7.1.7",
     "vue-tsc": "^3.1.0"
