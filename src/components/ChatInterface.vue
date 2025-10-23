@@ -67,7 +67,6 @@ const handleSubmit = async (e: Event) => {
   }
 
   messages.value.push(userMessage)
-  const currentInput = input.value
   input.value = ''
   isLoading.value = true
 
@@ -120,7 +119,8 @@ const handleSubmit = async (e: Event) => {
           const data = JSON.parse(jsonStr)
 
           if (data.type === 'text-delta') {
-            assistantMessage.content += data.text
+            const textContent = data.textDelta || data.text || ''
+            assistantMessage.content += textContent
           } else if (data.type === 'tool-call') {
             if (!assistantMessage.toolInvocations) {
               assistantMessage.toolInvocations = []
@@ -178,12 +178,17 @@ const handleSubmit = async (e: Event) => {
 
           <!-- Tool invocations -->
           <div v-if="message.toolInvocations && message.toolInvocations.length > 0" class="tool-invocations">
-            <div v-for="(tool, toolIndex) in message.toolInvocations" :key="toolIndex" class="tool-pill">
-              <span class="tool-icon">🛠️</span>
-              <span class="tool-name">{{ getToolDisplayName(tool.toolName) }}</span>
-              <span v-if="tool.state === 'result'" class="tool-status success">✓</span>
-              <span v-else-if="tool.state === 'call'" class="tool-status pending">⋯</span>
-              <span v-else class="tool-status error">✗</span>
+            <div v-for="(tool, toolIndex) in message.toolInvocations" :key="toolIndex" class="tool-section">
+              <div class="tool-pill">
+                <span class="tool-icon">🛠️</span>
+                <span class="tool-name">{{ getToolDisplayName(tool.toolName) }}</span>
+                <span v-if="tool.state === 'result'" class="tool-status success">✓</span>
+                <span v-else-if="tool.state === 'call'" class="tool-status pending">⋯</span>
+                <span v-else class="tool-status error">✗</span>
+              </div>
+              <div v-if="tool.result" class="tool-result">
+                <pre>{{ JSON.stringify(tool.result, null, 2) }}</pre>
+              </div>
             </div>
           </div>
         </div>
@@ -304,9 +309,15 @@ const handleSubmit = async (e: Event) => {
 
 .tool-invocations {
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
   gap: 0.5rem;
   margin-top: 0.5rem;
+}
+
+.tool-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
 }
 
 .tool-pill {
@@ -319,6 +330,23 @@ const handleSubmit = async (e: Event) => {
   border-radius: 4px;
   font-size: 0.85rem;
   color: #666;
+  width: fit-content;
+}
+
+.tool-result {
+  background: #f5f5f5;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  padding: 0.5rem;
+  font-size: 0.85rem;
+  overflow-x: auto;
+}
+
+.tool-result pre {
+  margin: 0;
+  font-family: monospace;
+  white-space: pre-wrap;
+  word-wrap: break-word;
 }
 
 .tool-icon {
