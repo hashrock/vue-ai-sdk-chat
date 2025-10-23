@@ -41,7 +41,13 @@ const scrollToBottom = async () => {
 }
 
 const formatMessage = (content: string) => {
-  return marked.parse(content)
+  if (!content) return ''
+  try {
+    return marked.parse(content) as string
+  } catch (error) {
+    console.error('Error parsing markdown:', error)
+    return content
+  }
 }
 
 const getToolDisplayName = (toolName: string): string => {
@@ -78,10 +84,12 @@ const handleSubmit = async (e: Event) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        messages: messages.value.map(m => ({
-          role: m.role,
-          content: m.content,
-        })),
+        messages: messages.value
+          .filter(m => m.role === 'user' || (m.role === 'assistant' && m.content && m.content.trim()))
+          .map(m => ({
+            role: m.role,
+            content: m.content,
+          })),
       }),
     })
 
@@ -172,7 +180,7 @@ const handleSubmit = async (e: Event) => {
         </div>
 
         <div class="message-content">
-          <div v-if="message.content" v-html="formatMessage(message.content)" class="markdown-content"></div>
+          <div v-if="message.content && message.content.trim()" v-html="formatMessage(message.content)" class="markdown-content"></div>
 
           <!-- Tool invocations -->
           <div v-if="message.toolInvocations && message.toolInvocations.length > 0" class="tool-invocations">
