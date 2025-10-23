@@ -12,6 +12,7 @@ interface ToolInvocation {
   state: 'call' | 'result' | 'error'
   args?: any
   result?: any
+  expanded?: boolean
 }
 
 interface Message {
@@ -54,6 +55,10 @@ const getToolDisplayName = (toolName: string): string => {
     create_directory: 'Create Directory',
   }
   return names[toolName] || toolName
+}
+
+const toggleToolResult = (tool: ToolInvocation) => {
+  tool.expanded = !tool.expanded
 }
 
 const handleSubmit = async (e: Event) => {
@@ -129,6 +134,7 @@ const handleSubmit = async (e: Event) => {
               toolName: data.toolName,
               state: 'call',
               args: data.args,
+              expanded: false,
             })
           } else if (data.type === 'tool-result') {
             if (assistantMessage.toolInvocations) {
@@ -179,14 +185,15 @@ const handleSubmit = async (e: Event) => {
           <!-- Tool invocations -->
           <div v-if="message.toolInvocations && message.toolInvocations.length > 0" class="tool-invocations">
             <div v-for="(tool, toolIndex) in message.toolInvocations" :key="toolIndex" class="tool-section">
-              <div class="tool-pill">
+              <div class="tool-pill" @click="toggleToolResult(tool)" :class="{ clickable: tool.result }">
                 <span class="tool-icon">🛠️</span>
                 <span class="tool-name">{{ getToolDisplayName(tool.toolName) }}</span>
                 <span v-if="tool.state === 'result'" class="tool-status success">✓</span>
                 <span v-else-if="tool.state === 'call'" class="tool-status pending">⋯</span>
                 <span v-else class="tool-status error">✗</span>
+                <span v-if="tool.result" class="expand-icon">{{ tool.expanded ? '▼' : '▶' }}</span>
               </div>
-              <div v-if="tool.result" class="tool-result">
+              <div v-if="tool.result && tool.expanded" class="tool-result">
                 <pre>{{ JSON.stringify(tool.result, null, 2) }}</pre>
               </div>
             </div>
@@ -331,6 +338,21 @@ const handleSubmit = async (e: Event) => {
   font-size: 0.85rem;
   color: #666;
   width: fit-content;
+}
+
+.tool-pill.clickable {
+  cursor: pointer;
+  user-select: none;
+}
+
+.tool-pill.clickable:hover {
+  background: #f5f5f5;
+}
+
+.expand-icon {
+  font-size: 0.7rem;
+  color: #999;
+  margin-left: 0.25rem;
 }
 
 .tool-result {
