@@ -128,7 +128,7 @@ const handleSubmit = async (e: Event) => {
           const data = JSON.parse(jsonStr)
 
           if (data.type === 'text-delta') {
-            assistantMessage.content += data.textDelta
+            assistantMessage.content += data.text
           } else if (data.type === 'tool-call') {
             if (!assistantMessage.toolInvocations) {
               assistantMessage.toolInvocations = []
