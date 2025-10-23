@@ -84,8 +84,7 @@ describe('Message filtering', () => {
     ]
     const filtered = filterMessages(messages)
     expect(filtered).toHaveLength(2)
-    expect(filtered[0].content).toBe('Hello')
-    expect(filtered[1].content).toBe('World')
+    expect(filtered.map(m => m.content)).toEqual(['Hello', 'World'])
   })
 
   it('should exclude assistant messages with whitespace-only content', () => {

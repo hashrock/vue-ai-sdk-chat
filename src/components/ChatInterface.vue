@@ -99,12 +99,16 @@ const handleSubmit = async (e: Event) => {
     if (!reader) throw new Error('No reader available')
 
     const decoder = new TextDecoder()
-    const assistantMessageIndex = messages.value.length
     messages.value.push({
       role: 'assistant',
       content: '',
       toolInvocations: [],
     })
+
+    const assistantMessage = messages.value[messages.value.length - 1]
+    if (!assistantMessage) {
+      throw new Error('Failed to add assistant message entry')
+    }
 
     let buffer = ''
 
@@ -125,26 +129,22 @@ const handleSubmit = async (e: Event) => {
 
           if (data.type === 'text-delta') {
             const textContent = data.textDelta || data.text || ''
-            messages.value[assistantMessageIndex].content += textContent
+            assistantMessage.content += textContent
           } else if (data.type === 'tool-call') {
-            if (!messages.value[assistantMessageIndex].toolInvocations) {
-              messages.value[assistantMessageIndex].toolInvocations = []
+            if (!assistantMessage.toolInvocations) {
+              assistantMessage.toolInvocations = []
             }
-            messages.value[assistantMessageIndex].toolInvocations!.push({
+            assistantMessage.toolInvocations.push({
               toolName: data.toolName,
               state: 'call',
               args: data.args,
               expanded: false,
             })
           } else if (data.type === 'tool-result') {
-            if (messages.value[assistantMessageIndex].toolInvocations) {
-              const tool = messages.value[assistantMessageIndex].toolInvocations!.find(
-                t => t.toolName === data.toolName
-              )
-              if (tool) {
-                tool.state = 'result'
-                tool.result = data.output  // Changed from data.result to data.output
-              }
+            const tool = assistantMessage.toolInvocations?.find(t => t.toolName === data.toolName)
+            if (tool) {
+              tool.state = 'result'
+              tool.result = data.output  // Changed from data.result to data.output
             }
           }
 
